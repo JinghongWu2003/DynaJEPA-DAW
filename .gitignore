@@ -8,7 +8,6 @@ venv/
 .env
 .cache/
 **/__pycache__/
-data/
 checkpoints/
 runs/
 outputs/
