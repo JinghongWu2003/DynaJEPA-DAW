@@ -5,13 +5,17 @@ from torchvision import datasets, transforms
 
 class DualViewSTL10(Dataset):
     def __init__(self, root: str, split: str, image_size: int = 96, download: bool = True):
-        base_transform = transforms.Compose([
-            transforms.Resize((image_size, image_size)),
-            transforms.ToTensor(),
-        ])
-        # For JEPA we just create two independently augmented views from same base transform.
-        self.transform = base_transform
-        self.dataset = datasets.STL10(root=root, split=split, download=download, transform=base_transform)
+        # Store the augmentation pipeline separately so we can sample two independent
+        # views from the raw image returned by the dataset. Passing the transform to
+        # the underlying STL10 dataset would yield tensors, causing a failure when
+        # applying the augmentation pipeline a second time (``ToTensor`` expects a
+        # PIL Image or ndarray).
+        self.transform = transforms.Compose(
+            [transforms.Resize((image_size, image_size)), transforms.ToTensor()]
+        )
+        self.dataset = datasets.STL10(
+            root=root, split=split, download=download, transform=None
+        )
 
     def __len__(self):
         return len(self.dataset)
